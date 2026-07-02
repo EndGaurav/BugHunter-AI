@@ -64,7 +64,7 @@ async def github_webhook(request: Request):
         
         # Print the analysis to the terminal so we can see it during the demo!
         print("\n" + "="*50)
-        print(f"🤖 Groq Analysis for PR #{pr_number}")
+        print(f"[AI] Groq Analysis for PR #{pr_number}")
         print("="*50)
         import json
         print(json.dumps(analysis_dict, indent=2))

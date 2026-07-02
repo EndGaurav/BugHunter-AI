@@ -13,7 +13,7 @@ async def setup_cognee():
         cognee.config.set_vector_db_provider("lancedb")
         
         # Graph database for relationships (code dependencies)
-        cognee.config.set_graph_db_provider("networkx")
+        cognee.config.set_graph_database_provider("ladybug")
         
         # We can also configure the LLM provider here if needed
         # e.g., cognee.config.set_llm_provider("gemini")

@@ -17,10 +17,11 @@ groq_api_key = os.getenv("GROQ_API_KEY", "")
 # 'groq' is not in Cognee's LLMProvider enum, but pass "groq/model" as
 # the model name so LiteLLM routes it correctly.
 os.environ["LLM_API_KEY"] = groq_api_key
-os.environ["LLM_MODEL"] = "groq/llama-3.1-8b-instant"
+os.environ["LLM_MODEL"] = "groq/llama-3.3-70b-versatile"
 os.environ["LLM_PROVIDER"] = "openai"
 os.environ["EMBEDDING_MODEL"] = "sentence-transformers/all-MiniLM-L6-v2"
 os.environ["EMBEDDING_PROVIDER"] = "fastembed"
+os.environ["GRAPH_DATABASE_PROVIDER"] = "ladybug"
 
 # Skip Cognee's pre-flight LLM connection test (it doesn't support custom
 # provider routing in its test runner, but the actual calls will work fine).
