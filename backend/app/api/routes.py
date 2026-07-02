@@ -1,13 +1,17 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import google.generativeai as genai
+from groq import Groq
 from app.core.config import settings
 
-router = APIRouter()
+from app.api.webhook import router as webhook_router
 
-# Initialize Gemini only if API key is provided
-if settings.GEMINI_API_KEY:
-    genai.configure(api_key=settings.GEMINI_API_KEY)
+router = APIRouter()
+router.include_router(webhook_router)
+
+# Initialize Groq only if API key is provided
+client = None
+if settings.GROQ_API_KEY:
+    client = Groq(api_key=settings.GROQ_API_KEY)
     
 class PromptRequest(BaseModel):
     prompt: str
@@ -17,12 +21,14 @@ class PromptResponse(BaseModel):
 
 @router.post("/generate", response_model=PromptResponse)
 async def generate_text(request: PromptRequest):
-    if not settings.GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="Gemini API key is not configured")
+    if not settings.GROQ_API_KEY or not client:
+        raise HTTPException(status_code=500, detail="Groq API key is not configured")
         
     try:
-        model = genai.GenerativeModel("gemini-1.5-pro")
-        response = model.generate_content(request.prompt)
-        return PromptResponse(response=response.text)
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": request.prompt}],
+        )
+        return PromptResponse(response=response.choices[0].message.content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
