@@ -1,15 +1,19 @@
 from langgraph.graph import StateGraph, END
 from app.agents.state import AgentState, PRReviewResult
 from app.agents.memory_logic import retrieve_context
-from groq import Groq
 from app.core.config import settings
+from openai import OpenAI
 import logging
 import json
 
 logger = logging.getLogger(__name__)
 
-# Initialize client globally for the workflow
-client = Groq(api_key=settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
+# Initialize client for AWS Bedrock OpenAI-compatible API
+# You may need to change the base_url depending on your region or setup
+client = OpenAI(
+    api_key=settings.AWS_BEARER_TOKEN_BEDROCK,
+    base_url="https://bedrock-runtime.us-east-1.amazonaws.com/v1" # update region if needed
+) if settings.AWS_BEARER_TOKEN_BEDROCK else None
 
 async def retrieve_context_node(state: AgentState) -> dict:
     """Node that fetches memory context for the PR diff."""
@@ -21,8 +25,8 @@ async def analyze_pr_node(state: AgentState) -> dict:
     """Node that uses Groq to analyze the PR against the memory context."""
     logger.info(f"Running analyze_pr_node for PR #{state.get('pr_number')}")
     if not client:
-        logger.warning("Groq API key not configured, skipping analysis.")
-        return {"analysis_result": PRReviewResult(risk_level="Unknown", potential_bugs=[], general_feedback="Groq API not configured.")}
+        logger.warning("AWS Bedrock API key not configured, skipping analysis.")
+        return {"analysis_result": PRReviewResult(risk_level="Unknown", potential_bugs=[], general_feedback="API key not configured.")}
         
     diff_text = ""
     for fname, diff in state.get("parsed_files", {}).items():
@@ -46,7 +50,7 @@ async def analyze_pr_node(state: AgentState) -> dict:
     
     try:
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant", # or "llama3-70b-8192"
+            model="meta.llama3-1-8b-instruct-v1:0",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
         )
