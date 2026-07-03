@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, END
 from app.agents.state import AgentState, PRReviewResult
 from app.agents.memory_logic import retrieve_context
+from openai import OpenAI
 from app.core.config import settings
 from openai import OpenAI
 import logging
@@ -22,7 +23,7 @@ async def retrieve_context_node(state: AgentState) -> dict:
     return {"memory_context": context}
 
 async def analyze_pr_node(state: AgentState) -> dict:
-    """Node that uses Groq to analyze the PR against the memory context."""
+    """Node that uses LLM to analyze the PR against the memory context."""
     logger.info(f"Running analyze_pr_node for PR #{state.get('pr_number')}")
     if not client:
         logger.warning("AWS Bedrock API key not configured, skipping analysis.")
@@ -50,7 +51,8 @@ async def analyze_pr_node(state: AgentState) -> dict:
     
     try:
         response = client.chat.completions.create(
-            model="meta.llama3-1-8b-instruct-v1:0",
+            # For AWS Bedrock, use the appropriate model ID
+            model="meta.llama3-1-8b-instruct-v1:0", 
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
         )
