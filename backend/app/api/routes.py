@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from groq import Groq
+from openai import OpenAI
 from app.core.config import settings
 
 from app.api.webhook import router as webhook_router
@@ -8,10 +8,13 @@ from app.api.webhook import router as webhook_router
 router = APIRouter()
 router.include_router(webhook_router)
 
-# Initialize Groq only if API key is provided
+# Initialize OpenAI for Bedrock only if API key is provided
 client = None
-if settings.GROQ_API_KEY:
-    client = Groq(api_key=settings.GROQ_API_KEY)
+if settings.AWS_BEARER_TOKEN_BEDROCK:
+    client = OpenAI(
+        api_key=settings.AWS_BEARER_TOKEN_BEDROCK,
+        base_url="https://bedrock-runtime.us-east-1.amazonaws.com/v1"
+    )
     
 class PromptRequest(BaseModel):
     prompt: str
@@ -21,12 +24,12 @@ class PromptResponse(BaseModel):
 
 @router.post("/generate", response_model=PromptResponse)
 async def generate_text(request: PromptRequest):
-    if not settings.GROQ_API_KEY or not client:
-        raise HTTPException(status_code=500, detail="Groq API key is not configured")
+    if not settings.AWS_BEARER_TOKEN_BEDROCK or not client:
+        raise HTTPException(status_code=500, detail="AWS Bedrock API key is not configured")
         
     try:
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="meta.llama3-8b-instruct-v1:0",
             messages=[{"role": "user", "content": request.prompt}],
         )
         return PromptResponse(response=response.choices[0].message.content)

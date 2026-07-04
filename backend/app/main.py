@@ -1,3 +1,6 @@
+import os
+os.environ["AWS_REGION_NAME"] = "us-east-1"
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.api.routes import router as api_router
@@ -24,4 +27,4 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8001, reload=True)

@@ -10,15 +10,13 @@ load_dotenv()
 
 # CRITICAL: Set all environment variables BEFORE importing cognee,
 # because Cognee reads its config at module import time.
-groq_api_key = os.getenv("GROQ_API_KEY", "")
+bedrock_api_key = os.getenv("AWS_BEARER_TOKEN_BEDROCK", "")
 
-# Cognee uses LiteLLM internally. LiteLLM supports Groq natively via the
-# "groq/" model prefix. We use 'openai' as the Cognee provider since
-# 'groq' is not in Cognee's LLMProvider enum, but pass "groq/model" as
-# the model name so LiteLLM routes it correctly.
-os.environ["LLM_API_KEY"] = groq_api_key
-os.environ["LLM_MODEL"] = "groq/llama-3.3-70b-versatile"
+# Cognee uses LiteLLM internally.
+os.environ["LLM_API_KEY"] = bedrock_api_key
+os.environ["LLM_MODEL"] = "meta.llama3-8b-instruct-v1:0"
 os.environ["LLM_PROVIDER"] = "openai"
+os.environ["OPENAI_BASE_URL"] = "https://bedrock-runtime.us-east-1.amazonaws.com/v1"
 os.environ["EMBEDDING_MODEL"] = "sentence-transformers/all-MiniLM-L6-v2"
 os.environ["EMBEDDING_PROVIDER"] = "fastembed"
 os.environ["GRAPH_DATABASE_PROVIDER"] = "ladybug"
